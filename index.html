@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POD Data Input - J&T Express</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Form input data POD J&T Express">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="POD Input">
+    <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -191,6 +199,9 @@
         <div class="header">
             <h1>📦 POD Data Input</h1>
             <p>Form Input Data J&T Express</p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                <span style="color: red;">*</span> = Wajib diisi
+            </p>
         </div>
 
         <div id="alert" class="alert"></div>
@@ -202,23 +213,23 @@
 
         <form id="podForm">
             <div class="form-group">
-                <label for="nama">Nama</label>
-                <input type="text" id="nama" name="nama" placeholder="Contoh: rahmad" required>
+                <label for="nama">Nama (Opsional)</label>
+                <input type="text" id="nama" name="nama" placeholder="Boleh dikosongkan">
             </div>
 
             <div class="form-group">
                 <label for="bio">BIO (Opsional)</label>
-                <input type="text" id="bio" name="bio" placeholder="Kosongkan jika tidak ada">
+                <input type="text" id="bio" name="bio" placeholder="Boleh dikosongkan">
             </div>
 
             <div class="form-group">
-                <label for="nohp">No HP</label>
-                <input type="text" id="nohp" name="nohp" placeholder="Contoh: 081211320857 atau 6281211320857" required>
-                <div class="phone-hint">Format otomatis menjadi +62 xxx-xxxx-xxxx</div>
+                <label for="nohp">No HP <span style="color: red;">*</span></label>
+                <input type="text" id="nohp" name="nohp" placeholder="Contoh: +62 852-5921-7719 atau 081211320857" required>
+                <div class="phone-hint">Format: +62 xxx-xxxx-xxxx (dengan atau tanpa +62 boleh)</div>
             </div>
 
             <div class="form-group">
-                <label for="pesan">Pesan Saya</label>
+                <label for="pesan">Pesan Saya <span style="color: red;">*</span></label>
                 <textarea id="pesan" name="pesan" placeholder="Contoh: Halo Kak【rahmad】,Saya dari J&T Express..." required></textarea>
             </div>
 
@@ -232,7 +243,7 @@
         // ============================================
         // KONFIGURASI - GANTI URL WEB APP ANDA DI SINI
         // ============================================
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz2Qk46KS9kUm1MxQEyNZTB5TAN0qkSRS3H7mys3qCD7oxhS6bGN8xvj25dc7ACxpD9/exec';
+        const WEB_APP_URL = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
         
         const form = document.getElementById('podForm');
         const alertBox = document.getElementById('alert');
@@ -266,11 +277,15 @@
                 pesan: document.getElementById('pesan').value.trim()
             };
 
-            // Validasi no HP
-            if (!/^\d+$/.test(formData.nohp.replace(/\D/g, ''))) {
-                showAlert('❌ Nomor HP harus berisi angka!', 'error');
+            // Validasi no HP - hapus semua karakter non-digit
+            const cleanPhone = formData.nohp.replace(/\D/g, '');
+            if (!cleanPhone || cleanPhone.length < 10) {
+                showAlert('❌ Nomor HP tidak valid! Minimal 10 digit.', 'error');
                 return;
             }
+            
+            // Kirim nomor dengan format asli (dengan +, spasi, dash)
+            // Script Apps akan handle formatting
 
             // Show loading
             loading.style.display = 'block';
@@ -310,6 +325,15 @@
         });
 
         observer.observe(alertBox, { attributes: true, attributeFilter: ['style'] });
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed'));
+            });
+        }
     </script>
 </body>
 </html>
